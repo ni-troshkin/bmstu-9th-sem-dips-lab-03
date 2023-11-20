@@ -1,0 +1,38 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+
+services:
+
+  db:
+    image: nitroshkin/db-rating:${APP_VERSION}
+    container_name: rating_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${RATING_PG_PASSWORD}
+      POSTGRES_USER: dev
+      POSTGRES_DB: ratingservice
+      PGDATA: /home/data
+      POSTGRES_INITDB_ARGS: "-A md5"
+    expose:
+      - 5432
+    ports:
+      - "54321:5432"
+    volumes:
+      - pg_data_volume:/data/lib/postgresql/data
+
+  server:
+    image: nitroshkin/service-rating:${APP_VERSION}
+    container_name: rating
+    expose:
+     - 8050
+    ports:
+      - "8050:8050"
+    depends_on:
+      - db
+    restart: unless-stopped
+   
+volumes:
+  pg_data_volume:
+
+
+

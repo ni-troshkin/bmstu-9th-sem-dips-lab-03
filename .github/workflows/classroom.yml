@@ -3,9 +3,36 @@ on:
   push:
     branches:
       - master
+      - server
   pull_request:
     branches:
       - master
+
+env:
+  APP_VERSION: ${{ github.run_number }}
+  RATING_IMAGE_NAME: nitroshkin/service-rating
+  RATING_DB_IMAGE_NAME: nitroshkin/db-rating
+  RATING_DB_PROPERTIES_PATH: ./app/server/services/rating/RatingService/src/main/resources/database.properties
+  RATING_PG_USER: dev
+  RATING_PG_PASSWORD: ${{ secrets.PG_PASSWORD }}
+  LIBRARY_IMAGE_NAME: nitroshkin/service-library
+  LIBRARY_DB_IMAGE_NAME: nitroshkin/db-library
+  LIBRARY_DB_PROPERTIES_PATH: ./app/server/services/library/LibraryService/src/main/resources/database.properties
+  LIBRARY_PG_USER: dev
+  LIBRARY_PG_PASSWORD: ${{ secrets.PG_PASSWORD }}
+  RESERVATIONS_IMAGE_NAME: nitroshkin/service-reservations
+  RESERVATIONS_DB_IMAGE_NAME: nitroshkin/db-reservations
+  RESERVATIONS_DB_PROPERTIES_PATH: ./app/server/services/reservations/ReservationService/src/main/resources/database.properties
+  RESERVATIONS_PG_USER: dev
+  RESERVATIONS_PG_PASSWORD: ${{ secrets.PG_PASSWORD }}
+  GATEWAY_IMAGE_NAME: nitroshkin/service-gateway
+
+  # DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  # DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  # VM_IP: 87.239.104.225
+  # VM_USER: ubuntu
+  # RATINGWORKDIR: /home/ubuntu/rating_deploy
+
 jobs:
   build:
     name: Autograding
@@ -16,8 +43,41 @@ jobs:
           fetch-depth: 0
 
       - uses: docker/setup-buildx-action@v2
+      - name: Build Rating Server
+        run: |
+          echo "APP_VERSION=$APP_VERSION" >> .env
+          echo "RATING_PG_USER=$RATING_PG_USER" >> .env
+          echo "RATING_PG_PASSWORD=$RATING_PG_PASSWORD" >> .env
+          rm -rf $RATING_DB_PROPERTIES_PATH
+          echo "db.url=jdbc:postgresql://rating_db:5432/ratingservice" >> $RATING_DB_PROPERTIES_PATH
+          echo "db.username=$RATING_PG_USER" >> $RATING_DB_PROPERTIES_PATH
+          echo "db.password=$RATING_PG_PASSWORD" >> $RATING_DB_PROPERTIES_PATH
+          echo "LIBRARY_PG_USER=$LIBRARY_PG_USER" >> .env
+          echo "LIBRARY_PG_PASSWORD=$LIBRARY_PG_PASSWORD" >> .env
+          rm -rf $LIBRARY_DB_PROPERTIES_PATH
+          echo "db.url=jdbc:postgresql://library_db:5432/libraryservice" >> $LIBRARY_DB_PROPERTIES_PATH
+          echo "db.username=$LIBRARY_PG_USER" >> $LIBRARY_DB_PROPERTIES_PATH
+          echo "db.password=$LIBRARY_PG_PASSWORD" >> $LIBRARY_DB_PROPERTIES_PATH
+          echo "RESERVATIONS_PG_USER=$RESERVATIONS_PG_USER" >> .env
+          echo "RESERVATIONS_PG_PASSWORD=$RESERVATIONS_PG_PASSWORD" >> .env
+          rm -rf $RESERVATIONS_DB_PROPERTIES_PATH
+          echo "db.url=jdbc:postgresql://reservation_db:5432/reservationservice" >> $RESERVATIONS_DB_PROPERTIES_PATH
+          echo "db.username=$RESERVATIONS_PG_USER" >> $RESERVATIONS_DB_PROPERTIES_PATH
+          echo "db.password=$RESERVATIONS_PG_PASSWORD" >> $RESERVATIONS_DB_PROPERTIES_PATH
+          # echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
+          docker build --quiet -t $RATING_IMAGE_NAME:$APP_VERSION ./app/server/services/rating/RatingService
+          docker build --quiet -t $LIBRARY_IMAGE_NAME:$APP_VERSION ./app/server/services/library/LibraryService
+          docker build --quiet -t $RESERVATIONS_IMAGE_NAME:$APP_VERSION ./app/server/services/reservations/ReservationService
+          docker build --quiet -t $GATEWAY_IMAGE_NAME:$APP_VERSION ./app/server/services/gateway/GatewayService
+          # docker push $IMAGE_NAME:$APP_VERSION
+          docker build --quiet -t $RATING_DB_IMAGE_NAME:$APP_VERSION ./app/server/services/rating/sql
+          docker build --quiet -t $LIBRARY_DB_IMAGE_NAME:$APP_VERSION ./app/server/services/library/sql
+          docker build --quiet -t $RESERVATIONS_DB_IMAGE_NAME:$APP_VERSION ./app/server/services/reservations/sql
+          # docker push $DB_IMAGE_NAME:$APP_VERSION
 
-      # TODO build and run unit tests
+      - name: Unit Tests
+        run: |
+          cd ./app/server/services/reservations/ReservationService && mvn clean -e -Dtest=*Test test
 
       - name: Build images
         timeout-minutes: 10
@@ -27,33 +87,35 @@ jobs:
         timeout-minutes: 5
         run: |
           docker compose up -d
+      
+      - name: Check containers
+        timeout-minutes: 5
+        run: |
           ./scripts/wait-script.sh
         env:
-          WAIT_PORTS: 8080,8070,8060,8050
-
-      # TODO setup variant, service and port
+          WAIT_PORTS: 8050,8060,8070,8080
 
       - name: Run API Tests
-        timeout-minutes: 5
-        run: ./scripts/test-script.sh
-        env:
-          VARIANT: <variant>
-          SERVICE_NAME: <your service name>
-          PORT_NUMBER: <port number>
+        uses: matt-ball/newman-action@master
+        with:
+          collection: v4/postman/collection.json
+          environment: v4/postman/environment.json
+          delayRequest: 100
+          reporters: '[ "cli" ]'
 
       - uses: education/autograding@v1
         id: autograder
         continue-on-error: true
 
-      - name: Github auto grader mark
-        uses: Romanow/google-sheet-autograder-marker@v1.0
-        with:
-          google_token: ${{secrets.GOOGLE_API_KEY}}
-          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
-          homework_number: 3
-          user_column: 'D'
-          column_offset: 'F'
-          mark: "'+"
+      # - name: Github auto grader mark
+      #  uses: Romanow/google-sheet-autograder-marker@v1.0
+      #  with:
+      #    google_token: ${{secrets.GOOGLE_API_KEY}}
+      #    sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
+      #    homework_number: 2
+      #    user_column: 'D'
+      #    column_offset: 'F'
+      #    mark: "'+"
 
       - name: Stop containers
         if: always()

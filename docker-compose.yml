@@ -14,7 +14,102 @@ services:
     ports:
       - "5432:5432"
 
-# TODO добавить сервисы
+  rating_db:
+    image: nitroshkin/db-rating:${APP_VERSION}
+    container_name: rating_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${RATING_PG_PASSWORD}
+      POSTGRES_USER: dev
+      POSTGRES_DB: ratingservice
+      PGDATA: /home/data
+      POSTGRES_INITDB_ARGS: "-A md5"
+    expose:
+      - 5432
+    ports:
+      - "54321:5432"
+    volumes:
+      - db-data:/data/lib/postgresql/data
+
+  rating_server:
+    image: nitroshkin/service-rating:${APP_VERSION}
+    container_name: rating
+    expose:
+     - 8050
+    ports:
+      - "8050:8050"
+    depends_on:
+      - rating_db
+    restart: unless-stopped
+
+  library_db:
+    image: nitroshkin/db-library:${APP_VERSION}
+    container_name: library_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${LIBRARY_PG_PASSWORD}
+      POSTGRES_USER: dev
+      POSTGRES_DB: libraryservice
+      PGDATA: /home/data
+      POSTGRES_INITDB_ARGS: "-A md5"
+    expose:
+      - 5433
+    ports:
+      - "54322:5432"
+    volumes:
+      - db-data:/data/lib/postgresql/data
+
+  library_server:
+    image: nitroshkin/service-library:${APP_VERSION}
+    container_name: library
+    expose:
+     - 8060
+    ports:
+      - "8060:8060"
+    depends_on:
+      - library_db
+    restart: unless-stopped
+
+  reservation_db:
+    image: nitroshkin/db-reservations:${APP_VERSION}
+    container_name: reservation_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${RESERVATIONS_PG_PASSWORD}
+      POSTGRES_USER: dev
+      POSTGRES_DB: reservationservice
+      PGDATA: /home/data
+      POSTGRES_INITDB_ARGS: "-A md5"
+    expose:
+      - 5434
+    ports:
+      - "54323:5432"
+    volumes:
+      - db-data:/data/lib/postgresql/data
+
+  reservation_server:
+    image: nitroshkin/service-reservations:${APP_VERSION}
+    container_name: reservations
+    expose:
+     - 8070
+    ports:
+      - "8070:8070"
+    depends_on:
+      - reservation_db
+    restart: unless-stopped
+
+  gateway_server:
+    image: nitroshkin/service-gateway:${APP_VERSION}
+    container_name: gateway
+    expose:
+     - 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - reservation_server
+      - library_server
+      - rating_server
+    restart: unless-stopped
 
 volumes:
   db-data:
