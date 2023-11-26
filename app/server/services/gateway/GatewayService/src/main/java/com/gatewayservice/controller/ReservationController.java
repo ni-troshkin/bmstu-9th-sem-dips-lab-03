@@ -35,9 +35,7 @@ public class ReservationController {
     @Operation(summary = "Получение списка книг, взятых пользователем в прокат")
     @GetMapping()
     public ResponseEntity<ArrayList<BookReservationResponse>> getReservations(@RequestHeader("X-User-Name") String username) {
-        ArrayList<BookReservationResponse> reservations = reservationService.getAllReservations(username);
-
-        return ResponseEntity.status(HttpStatus.OK).body(reservations);
+        return reservationService.getAllReservations(username);
     }
 
     /**

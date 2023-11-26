@@ -3,7 +3,11 @@ package com.gatewayservice.service;
 import com.gatewayservice.dto.LibraryBookResponse;
 import com.gatewayservice.dto.LibraryResponse;
 import com.gatewayservice.dto.UserRatingResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,12 +25,19 @@ public class LibraryService {
     private final RestTemplate restTemplate;
     private final String serverUrl;
 
-    public LibraryService(RestTemplate restTemplate, @Value("${library.server.url}") String serverUrl) {
+    private final CircuitBreakerFactory circuitBreakerFactory;
+    private static final Logger LOGGER = LoggerFactory.getLogger(RatingService.class);
+    private final CircuitBreaker circuitBreaker;
+
+    public LibraryService(RestTemplate restTemplate, CircuitBreakerFactory cbf,
+                          @Value("${library.server.url}") String serverUrl) {
         this.restTemplate = restTemplate;
         this.serverUrl = serverUrl;
+        this.circuitBreakerFactory = cbf;
+        this.circuitBreaker = circuitBreakerFactory.create("libraryCb");
     }
 
-    public ArrayList<LibraryResponse> getLibrariesByCity(String city) {
+    public ResponseEntity<ArrayList<LibraryResponse>> getLibrariesByCity(String city) {
         HttpEntity<String> entity = new HttpEntity<>("body");
         ResponseEntity<ArrayList<LibraryResponse>> libs = null;
         try {
@@ -41,10 +52,10 @@ public class LibraryService {
             e.printStackTrace();
         }
 
-        return libs.getBody();
+        return libs;
     }
 
-    public ArrayList<LibraryBookResponse> getBooksByLibrary(UUID libraryUid, boolean showAll) {
+    public ResponseEntity<ArrayList<LibraryBookResponse>> getBooksByLibrary(UUID libraryUid, boolean showAll) {
         HttpEntity<String> entity = new HttpEntity<>("body");
         ResponseEntity<ArrayList<LibraryBookResponse>> books = null;
         try {
@@ -59,6 +70,6 @@ public class LibraryService {
             e.printStackTrace();
         }
 
-        return books.getBody();
+        return books;
     }
 }

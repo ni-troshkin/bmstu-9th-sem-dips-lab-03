@@ -37,8 +37,7 @@ public class RatingController {
     @Operation(summary = "Получить рейтинг пользователя")
     @GetMapping()
     public ResponseEntity<UserRatingResponse> getPersonById(@RequestHeader("X-User-Name") String username) throws Exception {
-        UserRatingResponse rating = ratingService.getUserRating(username);
 
-        return ResponseEntity.status(HttpStatus.OK).body(rating);
+        return ratingService.getUserRating(username);
     }
 }

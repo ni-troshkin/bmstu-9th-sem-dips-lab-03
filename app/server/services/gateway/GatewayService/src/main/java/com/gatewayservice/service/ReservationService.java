@@ -2,7 +2,11 @@ package com.gatewayservice.service;
 
 import com.gatewayservice.dto.*;
 import org.apache.catalina.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,13 +28,24 @@ public class ReservationService {
     private final String libServerUrl;
     private final String reservServerUrl;
 
-    public ReservationService(RestTemplate restTemplate, @Value("${library.server.url}") String libServerUrl,
+    private final CircuitBreakerFactory circuitBreakerFactory;
+    private static final Logger LOGGER = LoggerFactory.getLogger(RatingService.class);
+    private final CircuitBreaker ratingCircuitBreaker;
+    private final CircuitBreaker libraryCircuitBreaker;
+    private final CircuitBreaker reservationsCircuitBreaker;
+
+    public ReservationService(RestTemplate restTemplate, CircuitBreakerFactory cbf,
+                              @Value("${library.server.url}") String libServerUrl,
                               @Value("${rating.server.url}") String ratingServerUrl,
                               @Value("${reservations.server.url}") String reservServerUrl) {
         this.restTemplate = restTemplate;
         this.libServerUrl = libServerUrl;
         this.ratingServerUrl = ratingServerUrl;
         this.reservServerUrl = reservServerUrl;
+        this.circuitBreakerFactory = cbf;
+        this.libraryCircuitBreaker = circuitBreakerFactory.create("libraryCb");
+        this.reservationsCircuitBreaker = circuitBreakerFactory.create("reservCb");
+        this.ratingCircuitBreaker = circuitBreakerFactory.create("ratingCb");
     }
 
     private BookInfo getBookInfo(UUID bookUid) {
@@ -237,7 +252,7 @@ public class ReservationService {
         }
     }
 
-    public ArrayList<BookReservationResponse> getAllReservations(String username) {
+    public ResponseEntity<ArrayList<BookReservationResponse>> getAllReservations(String username) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-User-Name", username);
 
@@ -264,7 +279,7 @@ public class ReservationService {
                     res.getStatus(), res.getStartDate(), res.getTillDate(), book, lib));
         }
 
-        return allRes;
+        return ResponseEntity.status(reservations.getStatusCode()).body(allRes);
     }
 
     public TakeBookResponse takeBook(String username, TakeBookRequest req) {
