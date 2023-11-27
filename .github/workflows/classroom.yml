@@ -89,7 +89,7 @@ jobs:
       - name: Run containers
         timeout-minutes: 5
         run: |
-          docker compose up -d
+          docker compose up
       
       - name: Check containers
         timeout-minutes: 5
