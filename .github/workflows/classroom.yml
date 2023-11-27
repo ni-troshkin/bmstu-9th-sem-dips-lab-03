@@ -52,6 +52,7 @@ jobs:
           echo "db.url=jdbc:postgresql://rating_db:5432/ratingservice" >> $RATING_DB_PROPERTIES_PATH
           echo "db.username=$RATING_PG_USER" >> $RATING_DB_PROPERTIES_PATH
           echo "db.password=$RATING_PG_PASSWORD" >> $RATING_DB_PROPERTIES_PATH
+          cat $RATING_DB_PROPERTIES_PATH
           echo "LIBRARY_PG_USER=$LIBRARY_PG_USER" >> .env
           echo "LIBRARY_PG_PASSWORD=$LIBRARY_PG_PASSWORD" >> .env
           rm -rf $LIBRARY_DB_PROPERTIES_PATH
