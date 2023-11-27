@@ -19,8 +19,9 @@ public class Resilience4JConfig {
                                 .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
                                 .slidingWindowSize(3)
                                 .failureRateThreshold(100)
-                                .waitDurationInOpenState(Duration.ofSeconds(60))
+                                .waitDurationInOpenState(Duration.ofSeconds(15))
                                 .minimumNumberOfCalls(1)
+                                .automaticTransitionFromOpenToHalfOpenEnabled(true)
                                 .build()
                 )
                 .build());

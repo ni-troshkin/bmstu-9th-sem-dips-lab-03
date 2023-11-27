@@ -1,6 +1,8 @@
 package com.ratingservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ratingservice.dto.UpdateRatingRequest;
 import com.ratingservice.dto.UserRatingResponse;
 import com.ratingservice.mapper.RatingMapper;
 import com.ratingservice.service.RatingService;
@@ -32,10 +34,11 @@ public class Consumer {
     }
 
     @KafkaListener(topics = ratingTopic)
-    public ResponseEntity<UserRatingResponse> consumeMessage(String message) throws SQLException {
+    public ResponseEntity<String> consumeRatingUpdate(String message) throws SQLException, JsonProcessingException {
         log.info("message consumed {}", message);
+        UpdateRatingRequest req = objectMapper.readValue(message, UpdateRatingRequest.class);
 
-        int rating = ratingService.getRatingByUsername(message);
-        return ResponseEntity.status(HttpStatus.OK).body(mapper.toRatingResponse(rating));
+        ratingService.updateRating(req.getUsername(), req.getDelta());
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

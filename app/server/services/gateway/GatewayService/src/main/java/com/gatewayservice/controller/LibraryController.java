@@ -44,7 +44,10 @@ public class LibraryController {
         ArrayList<LibraryResponse> allLibs = response.getBody();
         HttpStatus status = response.getStatusCode();
 
-        if (status != HttpStatus.OK || page == null)
+        if (status != HttpStatus.OK)
+            return ResponseEntity.status(status).build();
+
+        if (page == null)
             return ResponseEntity.status(status).body(new LibraryPaginationResponse(1, 1, allLibs.size(), allLibs));
 
         int maxPage = allLibs.size() / size + 1;
@@ -75,7 +78,10 @@ public class LibraryController {
         ArrayList<LibraryBookResponse> books = response.getBody();
         HttpStatus status = response.getStatusCode();
 
-        if (status != HttpStatus.OK || page == null)
+        if (status != HttpStatus.OK)
+            return ResponseEntity.status(status).build();
+
+        if (page == null)
             return ResponseEntity.status(status).body(new LibraryBookPaginationResponse(1, 1, books.size(), books));
 
         int maxPage = books.size() / size + 1;

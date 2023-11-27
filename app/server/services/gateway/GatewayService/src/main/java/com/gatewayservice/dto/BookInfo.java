@@ -14,4 +14,8 @@ public class BookInfo {
     String name;
     String author;
     String genre;
+
+    public BookInfo(String bookUid) {
+        this.bookUid = bookUid;
+    }
 }

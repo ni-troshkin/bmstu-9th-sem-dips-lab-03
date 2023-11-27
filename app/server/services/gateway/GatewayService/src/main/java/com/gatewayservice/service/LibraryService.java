@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -27,26 +24,38 @@ public class LibraryService {
 
     private final CircuitBreakerFactory circuitBreakerFactory;
     private static final Logger LOGGER = LoggerFactory.getLogger(RatingService.class);
-    private final CircuitBreaker circuitBreaker;
+    private final CircuitBreaker libraryCircuitBreaker;
+    private final CircuitBreaker bookCircuitBreaker;
 
     public LibraryService(RestTemplate restTemplate, CircuitBreakerFactory cbf,
                           @Value("${library.server.url}") String serverUrl) {
         this.restTemplate = restTemplate;
         this.serverUrl = serverUrl;
         this.circuitBreakerFactory = cbf;
-        this.circuitBreaker = circuitBreakerFactory.create("libraryCb");
+        this.libraryCircuitBreaker = circuitBreakerFactory.create("libraryCb");
+        this.bookCircuitBreaker = circuitBreakerFactory.create("bookCb");
+    }
+
+    public ResponseEntity<ArrayList<LibraryResponse>> fallbackLibraryResponse() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    public ResponseEntity<ArrayList<LibraryBookResponse>> fallbackLibraryBookResponse() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     public ResponseEntity<ArrayList<LibraryResponse>> getLibrariesByCity(String city) {
         HttpEntity<String> entity = new HttpEntity<>("body");
         ResponseEntity<ArrayList<LibraryResponse>> libs = null;
         try {
-            libs = restTemplate.exchange(
-                    serverUrl + "/api/v1/libraries?city=" + city,
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<ArrayList<LibraryResponse>>() {
-                    }
+            libs = libraryCircuitBreaker.run(
+                    () -> restTemplate.exchange(
+                            serverUrl + "/api/v1/libraries?city=" + city,
+                            HttpMethod.GET,
+                            entity,
+                            new ParameterizedTypeReference<ArrayList<LibraryResponse>>() {
+                            }
+                    ), throwable -> fallbackLibraryResponse()
             );
         } catch (HttpClientErrorException e) {
             e.printStackTrace();
@@ -59,12 +68,14 @@ public class LibraryService {
         HttpEntity<String> entity = new HttpEntity<>("body");
         ResponseEntity<ArrayList<LibraryBookResponse>> books = null;
         try {
-            books = restTemplate.exchange(
-                    serverUrl + "/api/v1/libraries/" + libraryUid + "/books?showAll=" + Boolean.valueOf(showAll).toString(),
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<ArrayList<LibraryBookResponse>>() {
-                    }
+            books = bookCircuitBreaker.run(
+                    () -> restTemplate.exchange(
+                        serverUrl + "/api/v1/libraries/" + libraryUid + "/books?showAll=" + Boolean.valueOf(showAll).toString(),
+                        HttpMethod.GET,
+                        entity,
+                        new ParameterizedTypeReference<ArrayList<LibraryBookResponse>>() {
+                        }
+                    ), throwable -> fallbackLibraryBookResponse()
             );
         } catch (HttpClientErrorException e) {
             e.printStackTrace();

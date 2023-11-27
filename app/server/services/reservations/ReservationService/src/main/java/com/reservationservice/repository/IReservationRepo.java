@@ -42,6 +42,13 @@ public interface IReservationRepo {
     public void closeReservation(UUID reservationUid, boolean isExpired) throws SQLException;
 
     /**
+     * Удаление записи в базе проката книг при откате операции
+     * @param reservationUid UUID брони, информацию о которой требуется удалить
+     * @throws SQLException при неуспешном подключении или внутренней ошибке базы данных
+     */
+    public void deleteReservation(UUID reservationUid) throws SQLException;
+
+    /**
      * Получение информации о брони
      * @param reservationUid UUID брони, информацию о которой требуется получить
      * @return информация об указанной брони

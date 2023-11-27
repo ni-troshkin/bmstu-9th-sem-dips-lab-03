@@ -72,4 +72,13 @@ public class ReservationService {
     public void closeReservation(UUID reservationUid, boolean isExpired) throws SQLException {
         repo.closeReservation(reservationUid, isExpired);
     }
+
+    /**
+     * Удалить информацию о брони
+     * @param reservationUid UUID брони, информацию о которой требуется удалить
+     * @throws SQLException при неуспешном подключении или внутренней ошибке базы данных
+     */
+    public void deleteReservation(UUID reservationUid) throws SQLException {
+        repo.deleteReservation(reservationUid);
+    }
 }

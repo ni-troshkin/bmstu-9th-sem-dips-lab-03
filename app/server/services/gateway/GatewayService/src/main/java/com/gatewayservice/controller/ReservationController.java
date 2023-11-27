@@ -1,5 +1,6 @@
 package com.gatewayservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gatewayservice.dto.BookReservationResponse;
 import com.gatewayservice.dto.ReturnBookRequest;
 import com.gatewayservice.dto.TakeBookRequest;
@@ -49,6 +50,9 @@ public class ReservationController {
                                                      @RequestBody TakeBookRequest req) {
         TakeBookResponse reservation = reservationService.takeBook(username, req);
 
+        if (reservation == null)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         return ResponseEntity.status(HttpStatus.OK).body(reservation);
     }
 
@@ -62,9 +66,9 @@ public class ReservationController {
     @PostMapping("/{reservationUid}/return")
     public ResponseEntity<String> returnBook(@PathVariable UUID reservationUid,
                                                    @RequestHeader("X-User-Name") String username,
-                                                   @RequestBody ReturnBookRequest req) {
-        reservationService.returnBook(reservationUid, username, req);
+                                                   @RequestBody ReturnBookRequest req) throws JsonProcessingException {
+        HttpStatus status = reservationService.returnBook(reservationUid, username, req);
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(status).build();
     }
 }

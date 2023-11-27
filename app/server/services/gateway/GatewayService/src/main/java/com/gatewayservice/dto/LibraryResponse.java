@@ -16,4 +16,8 @@ public class LibraryResponse {
     String name;
     String address;
     String city;
+
+    public LibraryResponse(String libraryUid) {
+        this.libraryUid = UUID.fromString(libraryUid);
+    }
 }

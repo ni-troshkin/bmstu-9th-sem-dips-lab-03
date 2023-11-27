@@ -109,4 +109,16 @@ public class ReservationController {
         Reservation reservation = reservationService.getReservation(reservationUid);
         return ResponseEntity.status(HttpStatus.OK).body(mapper.toReservationResponse(reservation));
     }
+
+    /**
+     * Отменить бронь
+     * @param reservationUid UUID брони, которую нужно удалить
+     * @throws SQLException при неуспешном подключении или внутренней ошибке базы данных
+     */
+    @Operation(summary = "Удалить бронь")
+    @DeleteMapping("/{reservationUid}")
+    public ResponseEntity<String> deleteReservation(@PathVariable UUID reservationUid) throws SQLException {
+        reservationService.deleteReservation(reservationUid);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

@@ -18,4 +18,8 @@ public class LibraryBookResponse {
     String genre;
     String condition;
     int availableCount;
+
+    public LibraryBookResponse(String bookUid) {
+        this.bookUid = UUID.fromString(bookUid);
+    }
 }

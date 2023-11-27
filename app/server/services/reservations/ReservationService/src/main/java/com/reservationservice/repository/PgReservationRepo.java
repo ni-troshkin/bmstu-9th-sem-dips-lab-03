@@ -155,4 +155,17 @@ public class PgReservationRepo implements IReservationRepo {
 
         return reservation;
     }
+
+    /**
+     * Удаление записи в базе проката книг при откате операции
+     * @param reservationUid UUID брони, информацию о которой требуется удалить
+     * @throws SQLException при неуспешном подключении или внутренней ошибке базы данных
+     */
+    public void deleteReservation(UUID reservationUid) throws SQLException {
+        String deleteReservation = "DELETE FROM public.reservation " +
+                "WHERE reservation_uid = ?";
+        PreparedStatement reservationDeletion = conn.prepareStatement(deleteReservation);
+        reservationDeletion.setObject(1, reservationUid);
+        reservationDeletion.executeUpdate();
+    }
 }

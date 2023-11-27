@@ -18,31 +18,31 @@ import org.springframework.web.client.RestTemplate;
 public class RatingService {
     private final RestTemplate restTemplate;
 
-    private final RatingProducer producer;
+//    private final RatingProducer producer;
     private final CircuitBreakerFactory circuitBreakerFactory;
     private static final Logger LOGGER = LoggerFactory.getLogger(RatingService.class);
     private final CircuitBreaker circuitBreaker;
     private final String serverUrl;
 
     public RatingService(RestTemplate restTemplate, CircuitBreakerFactory cbf,
-                         @Value("${rating.server.url}") String serverUrl,
-                         RatingProducer producer) {
+                         @Value("${rating.server.url}") String serverUrl
+//                         RatingProducer producer
+                         ) {
         this.restTemplate = restTemplate;
         this.circuitBreakerFactory = cbf;
         this.serverUrl = serverUrl;
         this.circuitBreaker = circuitBreakerFactory.create("userRatingCb");
-        this.producer = producer;
+//        this.producer = producer;
     }
 
-    public ResponseEntity<UserRatingResponse> fallbackUserRatingResponse(String username) {
-        producer.sendMessage(username);
-        return ResponseEntity.status(HttpStatus.OK).body(new UserRatingResponse(0));
+    public ResponseEntity<UserRatingResponse> fallbackUserRatingResponse() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     public ResponseEntity<UserRatingResponse> getUserRating(String username) {
 //        if (fallbackCnt > MAX_FALLBACK_CNT)
 //            return fallbackUserRatingResponse().getBody();
-        LOGGER.debug("Обработка рейтинга {}");
+        LOGGER.debug("Обработка рейтинга {}", username);
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-User-Name", username);
 
@@ -56,7 +56,7 @@ public class RatingService {
                             entity,
                             new ParameterizedTypeReference<UserRatingResponse>() {
                             }
-                    ), throwable -> fallbackUserRatingResponse(username)
+                    ), throwable -> fallbackUserRatingResponse()
             );
 
         /*;*/

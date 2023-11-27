@@ -20,4 +20,8 @@ public class ReservationResponse {
     String status;
     String startDate;
     String tillDate;
+
+    public ReservationResponse(String reservationUid) {
+        this.reservationUid = UUID.fromString(reservationUid);
+    }
 }
