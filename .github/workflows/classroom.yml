@@ -59,12 +59,14 @@ jobs:
           echo "db.url=jdbc:postgresql://library_db:5432/libraryservice" >> $LIBRARY_DB_PROPERTIES_PATH
           echo "db.username=$LIBRARY_PG_USER" >> $LIBRARY_DB_PROPERTIES_PATH
           echo "db.password=$LIBRARY_PG_PASSWORD" >> $LIBRARY_DB_PROPERTIES_PATH
+          cat $LIBRARY_DB_PROPERTIES_PATH
           echo "RESERVATIONS_PG_USER=$RESERVATIONS_PG_USER" >> .env
           echo "RESERVATIONS_PG_PASSWORD=$RESERVATIONS_PG_PASSWORD" >> .env
           rm -rf $RESERVATIONS_DB_PROPERTIES_PATH
           echo "db.url=jdbc:postgresql://reservation_db:5432/reservationservice" >> $RESERVATIONS_DB_PROPERTIES_PATH
           echo "db.username=$RESERVATIONS_PG_USER" >> $RESERVATIONS_DB_PROPERTIES_PATH
           echo "db.password=$RESERVATIONS_PG_PASSWORD" >> $RESERVATIONS_DB_PROPERTIES_PATH
+          cat $RESERVATIONS_DB_PROPERTIES_PATH
           # echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
           docker build --quiet -t $RATING_IMAGE_NAME:$APP_VERSION ./app/server/services/rating/RatingService
           docker build --quiet -t $LIBRARY_IMAGE_NAME:$APP_VERSION ./app/server/services/library/LibraryService
@@ -94,7 +96,7 @@ jobs:
         run: |
           ./scripts/wait-script.sh
         env:
-          WAIT_PORTS: 8050,8060,8070,8080
+          WAIT_PORTS: 8080,8070,8060,8050
 
       - name: Run API Tests
         timeout-minutes: 5

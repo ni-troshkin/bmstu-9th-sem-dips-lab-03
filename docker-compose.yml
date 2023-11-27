@@ -40,6 +40,7 @@ services:
       - "8050:8050"
     depends_on:
       - rating_db
+      - kafka
     restart: unless-stopped
 
   library_db:
@@ -68,6 +69,7 @@ services:
       - "8060:8060"
     depends_on:
       - library_db
+      - kafka
     restart: unless-stopped
 
   reservation_db:
@@ -109,6 +111,7 @@ services:
       - reservation_server
       - library_server
       - rating_server
+      - kafka
     restart: unless-stopped
     
   zookeeper:
