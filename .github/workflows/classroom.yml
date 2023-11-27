@@ -97,6 +97,8 @@ jobs:
           ./scripts/wait-script.sh
         env:
           WAIT_PORTS: 8080,8070,8060,8050
+        continue-on-error: true
+
 
       - name: Run API Tests
         timeout-minutes: 5
