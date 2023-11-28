@@ -104,7 +104,7 @@ jobs:
         run: ./scripts/test-script.sh
         env:
           VARIANT: v4
-          SERVICE_NAME: library
+          SERVICE_NAME: library_server
           PORT_NUMBER: 8060
 
       - uses: education/autograding@v1
