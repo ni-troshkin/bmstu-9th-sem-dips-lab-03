@@ -51,7 +51,7 @@ public class ReservationController {
         TakeBookResponse reservation = reservationService.takeBook(username, req);
 
         if (reservation == null)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
 
         return ResponseEntity.status(HttpStatus.OK).body(reservation);
     }
