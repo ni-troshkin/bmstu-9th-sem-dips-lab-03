@@ -1,5 +1,6 @@
 package com.gatewayservice.controller;
 
+import com.gatewayservice.dto.ErrorResponse;
 import com.gatewayservice.dto.UserRatingResponse;
 import com.gatewayservice.mapper.RatingMapper;
 import com.gatewayservice.service.RatingService;
@@ -40,7 +41,7 @@ public class RatingController {
 
         ResponseEntity<UserRatingResponse> response = ratingService.getUserRating(username);
         if (response.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE)
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Bonus Service unavailable");
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse("Bonus Service unavailable"));
 
         return response;
     }

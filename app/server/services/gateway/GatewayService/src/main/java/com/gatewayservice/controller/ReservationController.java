@@ -1,10 +1,7 @@
 package com.gatewayservice.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gatewayservice.dto.BookReservationResponse;
-import com.gatewayservice.dto.ReturnBookRequest;
-import com.gatewayservice.dto.TakeBookRequest;
-import com.gatewayservice.dto.TakeBookResponse;
+import com.gatewayservice.dto.*;
 import com.gatewayservice.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,12 +44,12 @@ public class ReservationController {
      */
     @Operation(summary = "Взять книгу в библиотеке")
     @PostMapping()
-    public ResponseEntity<TakeBookResponse> takeBook(@RequestHeader("X-User-Name") String username,
+    public ResponseEntity<?> takeBook(@RequestHeader("X-User-Name") String username,
                                                      @RequestBody TakeBookRequest req) {
         TakeBookResponse reservation = reservationService.takeBook(username, req);
 
         if (reservation == null)
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse("Bonus Service unavailable"));
 
         return ResponseEntity.status(HttpStatus.OK).body(reservation);
     }
