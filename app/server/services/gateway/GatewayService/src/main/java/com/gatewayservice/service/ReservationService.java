@@ -69,11 +69,11 @@ public class ReservationService {
     }
 
     private ResponseEntity<BookInfo> fallbackBookInfoResponse(String bookUid) {
-        return ResponseEntity.status(HttpStatus.OK).body(new BookInfo(bookUid));
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new BookInfo(bookUid));
     }
 
     private ResponseEntity<LibraryResponse> fallbackLibraryResponse(String libraryUid) {
-        return ResponseEntity.status(HttpStatus.OK).body(new LibraryResponse(libraryUid));
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new LibraryResponse(libraryUid));
     }
 
     private ResponseEntity<ReservationResponse> fallbackReservationResponse(String reservationUid) {
@@ -83,7 +83,7 @@ public class ReservationService {
     private ResponseEntity<LibraryBookResponse> fallbackLibraryBookResponse(String bookUid) {
         LibraryBookResponse response = new LibraryBookResponse(bookUid);
         response.setCondition("EXCELLENT");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
 
     private ResponseEntity<Integer> fallbackCountRentedResponse() {
@@ -91,7 +91,7 @@ public class ReservationService {
     }
 
     public ResponseEntity<UserRatingResponse> fallbackUserRatingResponse() {
-        return ResponseEntity.status(HttpStatus.OK).body(new UserRatingResponse(0));
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new UserRatingResponse(0));
     }
 
     public ResponseEntity<ArrayList<ReservationResponse>> fallbackAllReservationsResponse() {

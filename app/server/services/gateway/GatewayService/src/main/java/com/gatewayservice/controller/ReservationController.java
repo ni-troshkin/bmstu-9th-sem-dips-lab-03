@@ -40,11 +40,12 @@ public class ReservationController {
     }
 
     /**
-     * Получение списка книг, взятых в прокат по имени пользователя
-     * @param username имя пользователя, информацию о котором нужно получить
+     * Взять книгу в библиотеке
+     * @param username имя читателя
+     * @param req информация о запросе
      * @return список книг, взятых в прокат
      */
-    @Operation(summary = "Получение списка книг, взятых пользователем в прокат")
+    @Operation(summary = "Взять книгу в библиотеке")
     @PostMapping()
     public ResponseEntity<TakeBookResponse> takeBook(@RequestHeader("X-User-Name") String username,
                                                      @RequestBody TakeBookRequest req) {

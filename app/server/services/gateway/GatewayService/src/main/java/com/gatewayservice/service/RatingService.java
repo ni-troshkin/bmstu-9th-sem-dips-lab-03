@@ -37,7 +37,7 @@ public class RatingService {
     }
 
     public ResponseEntity<UserRatingResponse> fallbackUserRatingResponse() {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new UserRatingResponse(0));
     }
 
     public ResponseEntity<UserRatingResponse> getUserRating(String username) {
