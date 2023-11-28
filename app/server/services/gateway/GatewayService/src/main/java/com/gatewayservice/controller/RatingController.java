@@ -36,8 +36,12 @@ public class RatingController {
      */
     @Operation(summary = "Получить рейтинг пользователя")
     @GetMapping()
-    public ResponseEntity<UserRatingResponse> getPersonById(@RequestHeader("X-User-Name") String username) throws Exception {
+    public ResponseEntity<?> getPersonById(@RequestHeader("X-User-Name") String username) throws Exception {
 
-        return ratingService.getUserRating(username);
+        ResponseEntity<UserRatingResponse> response = ratingService.getUserRating(username);
+        if (response.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE)
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Bonus Service unavailable");
+
+        return response;
     }
 }
