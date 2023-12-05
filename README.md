@@ -1,5 +1,7 @@
 # Лабораторная работа #3
 
+## Трошкин Николай ИУ7-13М
+
 ![GitHub Classroom Workflow](../../workflows/GitHub%20Classroom%20Workflow/badge.svg?branch=master)
 
 ## Fault Tolerance
